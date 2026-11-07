@@ -59,12 +59,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Contact Form Validation
+    // Contact Form Submission with Formspree Integration
     const contactForm = document.getElementById('contactForm');
     const formSuccess = document.getElementById('formSuccess');
     const resetFormBtn = document.getElementById('resetFormBtn');
 
-    contactForm.addEventListener('submit', (e) => {
+    contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const name = document.getElementById('name');
@@ -86,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email.value.trim())) {
+            emailError.classList.add('hidden'); // Wait, keep error check
             emailError.classList.remove('hidden');
             isValid = false;
         } else {
@@ -100,8 +101,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (isValid) {
-            formSuccess.classList.remove('hidden');
-            contactForm.reset();
+            try {
+                const formData = new FormData(contactForm);
+                const response = await fetch(contactForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (response.ok) {
+                    formSuccess.classList.remove('hidden');
+                    contactForm.reset();
+                } else {
+                    alert('There was a problem sending your message. Please try again.');
+                }
+            } catch (error) {
+                alert('Network error. Please check your connection.');
+            }
         }
     });
 
