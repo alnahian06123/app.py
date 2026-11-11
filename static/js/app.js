@@ -2,12 +2,13 @@ import { renderSkills, renderProjects } from './ui.js';
 import { initTypewriter, initMobileMenu } from './animation.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Fix: Use window.lucide for ES Module compatibility
+    // Lucide Icons Initialization
     if (window.lucide) {
         window.lucide.createIcons();
     }
 
-    document.getElementById('year').textContent = new Date().getFullYear();
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
 
     initTypewriter();
     initMobileMenu();
@@ -47,81 +48,87 @@ document.addEventListener('DOMContentLoaded', () => {
     const projectModal = document.getElementById('projectModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
 
-    closeModalBtn.addEventListener('click', () => {
-        projectModal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    });
-
-    projectModal.addEventListener('click', (e) => {
-        if (e.target === projectModal) {
+    if (closeModalBtn && projectModal) {
+        closeModalBtn.addEventListener('click', () => {
             projectModal.classList.add('hidden');
             document.body.style.overflow = 'auto';
-        }
-    });
+        });
+
+        projectModal.addEventListener('click', (e) => {
+            if (e.target === projectModal) {
+                projectModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    }
 
     // Contact Form Submission with Formspree Integration
     const contactForm = document.getElementById('contactForm');
     const formSuccess = document.getElementById('formSuccess');
     const resetFormBtn = document.getElementById('resetFormBtn');
 
-    contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const name = document.getElementById('name');
-        const email = document.getElementById('email');
-        const message = document.getElementById('message');
+            const name = document.getElementById('name');
+            const email = document.getElementById('email');
+            const message = document.getElementById('message');
 
-        const nameError = document.getElementById('nameError');
-        const emailError = document.getElementById('emailError');
-        const messageError = document.getElementById('messageError');
+            const nameError = document.getElementById('nameError');
+            const emailError = document.getElementById('emailError');
+            const messageError = document.getElementById('messageError');
 
-        let isValid = true;
+            let isValid = true;
 
-        if (!name.value.trim()) {
-            nameError.classList.remove('hidden');
-            isValid = false;
-        } else {
-            nameError.classList.add('hidden');
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email.value.trim())) {
-            emailError.classList.add('hidden'); // Wait, keep error check
-            emailError.classList.remove('hidden');
-            isValid = false;
-        } else {
-            emailError.classList.add('hidden');
-        }
-
-        if (message.value.trim().length < 10) {
-            messageError.classList.remove('hidden');
-            isValid = false;
-        } else {
-            messageError.classList.add('hidden');
-        }
-
-        if (isValid) {
-            try {
-                const formData = new FormData(contactForm);
-                const response = await fetch(contactForm.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'Accept': 'application/json' }
-                });
-
-                if (response.ok) {
-                    formSuccess.classList.remove('hidden');
-                    contactForm.reset();
-                } else {
-                    alert('There was a problem sending your message. Please try again.');
-                }
-            } catch (error) {
-                alert('Network error. Please check your connection.');
+            if (name && !name.value.trim()) {
+                if (nameError) nameError.classList.remove('hidden');
+                isValid = false;
+            } else if (nameError) {
+                nameError.classList.add('hidden');
             }
-        }
-    });
 
-    resetFormBtn.addEventListener('click', () => {
-        formSuccess.classList.add('hidden');
-    });
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email && !emailRegex.test(email.value.trim())) {
+                if (emailError) emailError.classList.remove('hidden');
+                isValid = false;
+            } else if (emailError) {
+                emailError.classList.add('hidden');
+            }
+
+            if (message && message.value.trim().length < 10) {
+                if (messageError) messageError.classList.remove('hidden');
+                isValid = false;
+            } else if (messageError) {
+                messageError.classList.add('hidden');
+            }
+
+            if (isValid) {
+                try {
+                    const formData = new FormData(contactForm);
+                    const response = await fetch(contactForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Accept': 'application/json' }
+                    });
+
+                    if (response.ok) {
+                        if (formSuccess) formSuccess.classList.remove('hidden');
+                        contactForm.reset();
+                    } else {
+                        alert('There was a problem sending your message. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Form submission error:', error);
+                    alert('Network error. Please check your connection.');
+                }
+            }
+        });
+    }
+
+    if (resetFormBtn && formSuccess) {
+        resetFormBtn.addEventListener('click', () => {
+            formSuccess.classList.add('hidden');
+        });
+    }
 });
